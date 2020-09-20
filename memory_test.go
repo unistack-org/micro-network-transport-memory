@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/micro/go-micro/v3/network/transport"
+	"github.com/unistack-org/micro/v3/network/transport"
 )
 
 func TestMemoryTransport(t *testing.T) {
@@ -25,7 +25,7 @@ func TestMemoryTransport(t *testing.T) {
 				if err := sock.Recv(&m); err != nil {
 					return
 				}
-				if len(os.Getenv("IN_TRAVIS_CI")) == 0 {
+				if len(os.Getenv("INTEGRATION_TESTS")) == 0 {
 					t.Logf("Server Received %s", string(m.Body))
 				}
 				if err := sock.Send(&transport.Message{
@@ -57,7 +57,7 @@ func TestMemoryTransport(t *testing.T) {
 		if err := c.Recv(&m); err != nil {
 			return
 		}
-		if len(os.Getenv("IN_TRAVIS_CI")) == 0 {
+		if len(os.Getenv("INTEGRATION_TESTS")) == 0 {
 			t.Logf("Client Received %s", string(m.Body))
 		}
 	}
