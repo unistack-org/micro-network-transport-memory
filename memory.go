@@ -156,7 +156,7 @@ func (m *memoryListener) Accept(fn func(transport.Socket)) error {
 	}
 }
 
-func (m *memoryTransport) Dial(addr string, opts ...transport.DialOption) (transport.Client, error) {
+func (m *memoryTransport) Dial(ctx context.Context, addr string, opts ...transport.DialOption) (transport.Client, error) {
 	m.RLock()
 	defer m.RUnlock()
 
@@ -165,10 +165,7 @@ func (m *memoryTransport) Dial(addr string, opts ...transport.DialOption) (trans
 		return nil, errors.New("could not dial " + addr)
 	}
 
-	var options transport.DialOptions
-	for _, o := range opts {
-		o(&options)
-	}
+	options := transport.NewDialOptions(opts...)
 
 	client := &memoryClient{
 		&memorySocket{
@@ -194,14 +191,11 @@ func (m *memoryTransport) Dial(addr string, opts ...transport.DialOption) (trans
 	return client, nil
 }
 
-func (m *memoryTransport) Listen(addr string, opts ...transport.ListenOption) (transport.Listener, error) {
+func (m *memoryTransport) Listen(ctx context.Context, addr string, opts ...transport.ListenOption) (transport.Listener, error) {
 	m.Lock()
 	defer m.Unlock()
 
-	var options transport.ListenOptions
-	for _, o := range opts {
-		o(&options)
-	}
+	options := transport.NewListenOptions(opts...)
 
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -255,18 +249,14 @@ func (m *memoryTransport) String() string {
 	return "memory"
 }
 
+func (m *memoryTransport) Name() string {
+	return m.opts.Name
+}
+
 func NewTransport(opts ...transport.Option) transport.Transport {
-	var options transport.Options
+	options := transport.NewOptions(opts...)
 
 	rand.Seed(time.Now().UnixNano())
-
-	for _, o := range opts {
-		o(&options)
-	}
-
-	if options.Context == nil {
-		options.Context = context.Background()
-	}
 
 	return &memoryTransport{
 		opts:      options,
