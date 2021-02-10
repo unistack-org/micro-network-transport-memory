@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -9,9 +10,9 @@ import (
 
 func TestMemoryTransport(t *testing.T) {
 	tr := NewTransport()
-
+	ctx := context.Background()
 	// bind / listen
-	l, err := tr.Listen("127.0.0.1:8080")
+	l, err := tr.Listen(ctx, "127.0.0.1:8080")
 	if err != nil {
 		t.Fatalf("Unexpected error listening %v", err)
 	}
@@ -40,7 +41,7 @@ func TestMemoryTransport(t *testing.T) {
 	}()
 
 	// dial
-	c, err := tr.Dial("127.0.0.1:8080")
+	c, err := tr.Dial(ctx, "127.0.0.1:8080")
 	if err != nil {
 		t.Fatalf("Unexpected error dialing %v", err)
 	}
@@ -66,29 +67,29 @@ func TestMemoryTransport(t *testing.T) {
 
 func TestListener(t *testing.T) {
 	tr := NewTransport()
-
+	ctx := context.Background()
 	// bind / listen on random port
-	l, err := tr.Listen(":0")
+	l, err := tr.Listen(ctx, ":0")
 	if err != nil {
 		t.Fatalf("Unexpected error listening %v", err)
 	}
 	defer l.Close()
 
 	// try again
-	l2, err := tr.Listen(":0")
+	l2, err := tr.Listen(ctx, ":0")
 	if err != nil {
 		t.Fatalf("Unexpected error listening %v", err)
 	}
 	defer l2.Close()
 
 	// now make sure it still fails
-	l3, err := tr.Listen(":8080")
+	l3, err := tr.Listen(ctx, ":8080")
 	if err != nil {
 		t.Fatalf("Unexpected error listening %v", err)
 	}
 	defer l3.Close()
 
-	if _, err := tr.Listen(":8080"); err == nil {
+	if _, err := tr.Listen(ctx, ":8080"); err == nil {
 		t.Fatal("Expected error binding to :8080 got nil")
 	}
 }
